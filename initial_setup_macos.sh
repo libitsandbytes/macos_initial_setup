@@ -1,5 +1,10 @@
 #!/bin/bash
 
+
+
+# Set the timezone; see `sudo systemsetup -listtimezones` for other values
+sudo systemsetup -settimezone "Europe/Zurich" > /dev/null
+
 ###################################################
 #                                                 #
 #               Dock Settings                     #
@@ -44,8 +49,21 @@ defaults write com.apple.dock mru-spaces -bool false
 # Disable autocorrect
 defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 
-# Disable .DS_Store on network drives
-defaults write com.apple.desktopservices DSDontWriteNetworkStores true
+# Disable automatic capitalization as it’s annoying when typing code
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+
+# Disable smart dashes as they’re annoying when typing code
+defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+
+# Disable automatic period substitution as it’s annoying when typing code
+defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+
+# Disable smart quotes as they’re annoying when typing code
+defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+
+# Avoid creating .DS_Store files on network or USB volumes
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
 
 # Disable crash reporter
 defaults write com.apple.CrashReporter DialogType none
@@ -58,6 +76,31 @@ defaults write com.apple.CloudSubscriptionFeatures.optIn "545129924" -bool "fals
 
 # Set default screenshot location to Downloads.
 defaults write com.apple.screencapture "location" -string "~/Downloads" && killall SystemUIServer
+
+#Set screenshots image format to jpg
+defaults write com.apple.screencapture "type" -string "jpg"
+
+# Safari enable full website URL display
+defaults write com.apple.Safari "ShowFullURLInSmartSearchField" -bool "true" && killall Safari
+
+###################################################
+#                                                 #
+#              Power Management                   #
+#                                                 #
+###################################################
+
+# Sleep the display after 60 minutes
+sudo pmset -a displaysleep 60
+
+# Hibernation mode
+# 0: Disable hibernation (speeds up entering sleep mode)
+# 3: Copy RAM to disk so the system state can still be restored in case of a
+#    power failure.
+sudo pmset -a hibernatemode 3
+
+# Require password immediately after sleep or screen saver begins
+defaults write com.apple.screensaver askForPassword -int 1
+defaults write com.apple.screensaver askForPasswordDelay -int 0
 
 ###################################################
 #                                                 #
@@ -188,6 +231,33 @@ defaults write NSGlobalDomain NSTextShowsControlCharacters -bool true
 # Restart Dock to apply changes
 echo "Restarting Dock to apply changes..."
 killall Dock
+
+###################################################
+#                                                 #
+#                 Mac App Store                   #
+#                                                 #
+###################################################
+
+# Enable the automatic update check
+defaults write com.apple.SoftwareUpdate AutomaticCheckEnabled -bool true
+
+# Check for software updates daily, not just once per week
+defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1
+
+# Download newly available updates in background
+defaults write com.apple.SoftwareUpdate AutomaticDownload -int 1
+
+# Install System data files & security updates
+defaults write com.apple.SoftwareUpdate CriticalUpdateInstall -int 1
+
+# Disable auto download apps purchased on other Macs
+defaults write com.apple.SoftwareUpdate ConfigDataInstall -int 0
+
+# Turn on app auto-update
+defaults write com.apple.commerce AutoUpdate -bool true
+
+# Allow the App Store to reboot machine on macOS updates
+defaults write com.apple.commerce AutoUpdateRestartRequired -bool true
 
 ###################################################
 #                                                 #
