@@ -90,6 +90,18 @@ defaults write com.apple.finder SidebarDevicesSectionDisclosedState -bool true
 defaults write com.apple.finder SidebarPlacesSectionDisclosedState -bool true
 defaults write com.apple.finder SidebarShowingiCloudDesktop -bool false
 
+# Hide internal hard drives on desktop
+$ defaults write com.apple.Finder ShowHardDrivesOnDesktop -bool false
+
+# Hide external hard drives on desktop
+$ defaults write com.apple.Finder ShowExternalHardDrivesOnDesktop -bool false
+
+# Hide removable media on desktop
+$ defaults write com.apple.Finder ShowRemovableMediaOnDesktop -bool false
+
+# Hide mounted servers on desktop
+$ defaults write com.apple.Finder ShowMountedServersOnDesktop -bool false
+
 # Restart Finder to apply changes
 echo "Restarting Finder to apply changes..."
 killall Finder
