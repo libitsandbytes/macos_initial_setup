@@ -30,7 +30,25 @@ defaults write com.apple.dock mineffect -string "scale"
 defaults write com.apple.dock autohide -bool false
 
 # Set icon size to 62 pixels
-$ defaults write com.apple.Dock tilesize -int 62
+defaults write com.apple.Dock tilesize -int 62
+
+###################################################
+#                                                 #
+#          Enable-Disable features                #
+#                                                 #
+###################################################
+
+# Disable autocorrect
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+
+# Disable .DS_Store on network drives
+defaults write com.apple.desktopservices DSDontWriteNetworkStores true
+
+# Disable crash reporter
+defaults write com.apple.CrashReporter DialogType none
+
+# Disable save into iCloud
+defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 
 ###################################################
 #                                                 #
