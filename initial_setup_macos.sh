@@ -32,6 +32,9 @@ defaults write com.apple.dock autohide -bool false
 # Set icon size to 62 pixels
 defaults write com.apple.Dock tilesize -int 62
 
+# Fix Missions control to NEVER rearrange spaces
+defaults write com.apple.dock mru-spaces -bool false
+
 ###################################################
 #                                                 #
 #          Enable-Disable features                #
@@ -49,6 +52,12 @@ defaults write com.apple.CrashReporter DialogType none
 
 # Disable save into iCloud
 defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+
+# Deactivate Apple Intelligence
+defaults write com.apple.CloudSubscriptionFeatures.optIn "545129924" -bool "false"
+
+# Set default screenshot location to Downloads.
+defaults write com.apple.screencapture "location" -string "~/Downloads" && killall SystemUIServer
 
 ###################################################
 #                                                 #
@@ -341,12 +350,6 @@ echo "Application installation completed."
 #               System Cleanup                    #
 #                                                 #
 ###################################################
-
-# Fix Missions control to NEVER rearrange spaces
-defaults write com.apple.dock mru-spaces -bool false
-
-# Apple Intelligence Crap
-defaults write com.apple.CloudSubscriptionFeatures.optIn "545129924" -bool "false"
 
 # Empty Trash
 rm -rf ~/.Trash/*
