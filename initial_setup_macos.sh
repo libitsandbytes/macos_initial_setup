@@ -236,6 +236,36 @@ else
     echo "Failed to download Signal Messenger."
 fi
 
+# Download and install Bitwarden
+echo "Downloading Bitwarden..."
+curl -L -o "$TEMP_DIR/Bitwarden.dmg" "https://bitwarden.com/download/?app=desktop&platform=macos&variant=dmg"
+
+if [ $? -eq 0 ]; then
+    echo "Installing Bitwarden..."
+    hdiutil attach "$TEMP_DIR/Bitwarden.dmg" -quiet
+    
+    # Find the actual volume name and app name
+    BITWARDEN_VOLUME=$(ls /Volumes/ | grep -i bitwarden | head -1)
+    BITWARDEN_APP=$(ls "/Volumes/$BITWARDEN_VOLUME/" | grep -E "\.app$" | head -1)
+    
+    if [ -n "$BITWARDEN_VOLUME" ] && [ -n "$BITWARDEN_APP" ]; then
+        cp -R "/Volumes/$BITWARDEN_VOLUME/$BITWARDEN_APP" "/Applications/"
+        hdiutil detach "/Volumes/$BITWARDEN_VOLUME" -quiet
+        echo "Bitwarden installed successfully."
+    else
+        echo "Failed to locate Bitwarden app in mounted volume."
+        hdiutil detach "/Volumes/$BITWARDEN_VOLUME" -quiet 2>/dev/null || true
+    fi
+else
+    echo "Failed to download Bitwarden."
+fi
+
+# Clean up temporary directory
+echo "Cleaning up temporary files..."
+rm -rf "$TEMP_DIR"
+
+echo "Application installation completed."
+
 # Download and install Brave
 echo "Downloading Brave..."
 curl -L -o "$TEMP_DIR/Brave.dmg" "https://laptop-updates.brave.com/latest/osx"

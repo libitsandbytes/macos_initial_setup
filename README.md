@@ -38,6 +38,7 @@ A comprehensive shell script to quickly configure a fresh macOS installation wit
 - **Rectangle** - Window management utility (latest version from GitHub)
 - **Brave Browser** - Privacy-focused web browser
 - **Signal Messenger** - Privacy-focused messenger
+- **Bitwarden** - Password manager
 
 ## Usage
 
@@ -76,6 +77,7 @@ This script modifies system preferences and installs applications. The script pr
 - Rectangle window manager
 - Brave Browser
 - Signal Messenger
+- Bitwarden
 
 ## Important Notes
 
