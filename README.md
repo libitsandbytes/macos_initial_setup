@@ -4,6 +4,15 @@ A comprehensive shell script to quickly configure a fresh macOS installation wit
 
 ## Features
 
+### 🖥️ Dock Settings
+- Positions Dock at the bottom of the screen
+- Disables Dock magnification
+- Hides suggested and recent apps from Dock
+- Shows indicators for open applications
+- Enables application launch animations
+- Sets window minimize effect to scale animation
+- Keeps Dock always visible (disables auto-hide)
+
 ### 🗂️ Finder Configuration
 - Sets default view to list view with optimized column layout
 - Enables filename extensions, status bar, and path bar
@@ -55,6 +64,7 @@ A comprehensive shell script to quickly configure a fresh macOS installation wit
 This script modifies system preferences and installs applications. The script provides verbose output so you can see exactly what's being configured at each step.
 
 ### System Preferences Modified
+- Dock position, behavior, and visual effects
 - Finder view settings and behavior
 - Animation and motion settings
 - Dock and Mission Control preferences
