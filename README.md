@@ -32,11 +32,11 @@ A comprehensive shell script to quickly configure a fresh macOS installation wit
 
 1. Download the script:
    ```
-   curl -O https://raw.githubusercontent.com/yourusername/macos-setup/main/setup.sh
+   curl -O https://raw.githubusercontent.com/libitsandbytes/macos_initial_setup/refs/heads/main/initial_setup_macos.sh
 
 2. Make it executable:
    ```
-   chmod +x setup.sh
+   chmod +x initial_setup_macos.sh
 
 3. Run the script:
    ```
