@@ -37,6 +37,7 @@ A comprehensive shell script to quickly configure a fresh macOS installation wit
 - **ProtonMail** - Secure email client
 - **Rectangle** - Window management utility (latest version from GitHub)
 - **Brave Browser** - Privacy-focused web browser
+- **Signal Messenger** - Privacy-focused messenger
 
 ## Usage
 
@@ -74,6 +75,7 @@ This script modifies system preferences and installs applications. The script pr
 - ProtonMail desktop application
 - Rectangle window manager
 - Brave Browser
+- Signal Messenger
 
 ## Important Notes
 

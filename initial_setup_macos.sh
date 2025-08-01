@@ -206,6 +206,36 @@ else
     echo "Failed to download Rectangle."
 fi
 
+# Get latest Signal Messenger version and download URL
+echo "Checking latest Signal Messenger version..."
+SIGNAL_LATEST=$(curl -s "https://api.github.com/repos/signalapp/Signal-Desktop/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+SIGNAL_VERSION=$(echo $SIGNAL_LATEST | sed 's/^v//')
+SIGNAL_URL="https://updates.signal.org/desktop/signal-desktop-mac-universal-$SIGNAL_VERSION.dmg"
+
+echo "Downloading Signal Messenger..."
+
+curl -L -o "$TEMP_DIR/Signal.dmg" "$SIGNAL_URL"
+
+if [ $? -eq 0 ]; then
+    echo "Installing Signal Messenger..."
+    hdiutil attach "$TEMP_DIR/Signal.dmg" -quiet
+    
+    # Find the actual volume name and app name
+    SIGNAL_VOLUME=$(ls /Volumes/ | grep -i signal | head -1)
+    SIGNAL_APP=$(ls "/Volumes/$SIGNAL_VOLUME/" | grep -E "\.app$" | head -1)
+    
+    if [ -n "$SIGNAL_VOLUME" ] && [ -n "$SIGNAL_APP" ]; then
+        cp -R "/Volumes/$SIGNAL_VOLUME/$SIGNAL_APP" "/Applications/"
+        hdiutil detach "/Volumes/$SIGNAL_VOLUME" -quiet
+        echo "Signal Messenger installed successfully."
+    else
+        echo "Failed to locate Signal Messenger app in mounted volume."
+        hdiutil detach "/Volumes/$SIGNAL_VOLUME" -quiet 2>/dev/null || true
+    fi
+else
+    echo "Failed to download Signal Messenger."
+fi
+
 # Download and install Brave
 echo "Downloading Brave..."
 curl -L -o "$TEMP_DIR/Brave.dmg" "https://laptop-updates.brave.com/latest/osx"
