@@ -184,6 +184,30 @@ else
     echo "Failed to download Rectangle."
 fi
 
+# Download and install Brave
+echo "Downloading Brave..."
+curl -L -o "$TEMP_DIR/Brave.dmg" "https://laptop-updates.brave.com/latest/osx"
+
+if [ $? -eq 0 ]; then
+    echo "Installing Brave..."
+    hdiutil attach "$TEMP_DIR/Brave.dmg" -quiet
+    
+    # Find the actual volume name and app name
+    BRAVE_VOLUME=$(ls /Volumes/ | grep -i brave | head -1)
+    BRAVE_APP=$(ls "/Volumes/$BRAVE_VOLUME/" | grep -E "\.app$" | head -1)
+    
+    if [ -n "$BRAVE_VOLUME" ] && [ -n "$BRAVE_APP" ]; then
+        cp -R "/Volumes/$BRAVE_VOLUME/$BRAVE_APP" "/Applications/"
+        hdiutil detach "/Volumes/$BRAVE_VOLUME" -quiet
+        echo "Brave installed successfully."
+    else
+        echo "Failed to locate Brave app in mounted volume."
+        hdiutil detach "/Volumes/$BRAVE_VOLUME" -quiet 2>/dev/null || true
+    fi
+else
+    echo "Failed to download Brave."
+fi
+
 # Clean up temporary directory
 echo "Cleaning up temporary files..."
 rm -rf "$TEMP_DIR"
