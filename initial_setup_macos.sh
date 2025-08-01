@@ -7,20 +7,30 @@
 ###################################################
 
 echo "Configuring Dock settings..."
+
 # Move dock to the bottom
 defaults write com.apple.dock orientation -string "bottom"
+
 # Disable magnification
 defaults write com.apple.dock magnification -bool false
+
 # Disable "Show suggested and recent apps in Dock"
 defaults write com.apple.dock show-recents -bool false
+
 # Enable "Show indicators for open applications"
 defaults write com.apple.dock show-process-indicators -bool true
+
 # Enable "Animate opening applications"
 defaults write com.apple.dock launchanim -bool true
+
 # Set "Minimise windows using" to "Scale Effect"
 defaults write com.apple.dock mineffect -string "scale"
+
 # Disable "Automatically hide and show the Dock"
 defaults write com.apple.dock autohide -bool false
+
+# Set icon size to 62 pixels
+$ defaults write com.apple.Dock tilesize -int 62
 
 ###################################################
 #                                                 #
