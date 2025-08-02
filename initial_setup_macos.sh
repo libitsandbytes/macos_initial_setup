@@ -469,6 +469,48 @@ echo "Application installation completed."
 
 ###################################################
 #                                                 #
+#                  Brave config                   #
+#                                                 #
+###################################################
+
+# Configure Brave Browser
+echo "Configuring Brave Browser..."
+
+# Managed Settings - Security and Privacy Focused
+echo "Applying managed Brave settings..."
+defaults write com.brave.Browser TorDisabled -bool true
+defaults write com.brave.Browser BraveRewardsDisabled -bool true
+defaults write com.brave.Browser BraveWalletDisabled -bool true
+defaults write com.brave.Browser BraveVPNDisabled -bool true
+defaults write com.brave.Browser BraveAIChatEnabled -bool false
+defaults write com.brave.Browser ExtensionInstallForcelist -array "nngceckbapebfimnlniiiahkandclblb;https://clients2.google.com/service/update2/crx" "cofdbpoegempjloogbagkncekinflcnj;https://clients2.google.com/service/update2/crx"
+defaults write com.brave.Browser DefaultSearchProviderEnabled -bool true
+defaults write com.brave.Browser DefaultSearchProviderName -string "Startpage"
+defaults write com.brave.Browser DefaultSearchProviderSearchURL -string "https://eu.startpage.com/sp/search?query={searchTerms}&prfe=499dee7473ba6fe94b74ac8b94ee04457fc16b5d14c7e0db606858927c6bc283f953ad551f7beca19e503d14176eaa4d82029c8cace3cda754570c7e28fb666ab150c00038e7bbc587b259f03d61ba0edaae"
+defaults write com.brave.Browser AutofillAddressEnabled -bool false
+defaults write com.brave.Browser AutofillCreditCardEnabled -bool false
+defaults write com.brave.Browser PasswordManagerEnabled -bool false
+defaults write com.brave.Browser TranslateEnabled -bool false
+defaults write com.brave.Browser ImportAutofillFormData -bool false
+defaults write com.brave.Browser ImportSavedPasswords -bool false
+defaults write com.brave.Browser EnableMediaRouter -bool false
+
+# Recommended Settings - Enhanced Security and Usability
+echo "Applying recommended Brave settings..."
+defaults write com.brave.Browser AlwaysOpenPdfExternally -bool true
+defaults write com.brave.Browser BlockThirdPartyCookies -bool true
+defaults write com.brave.Browser BookmarkBarEnabled -bool true
+defaults write com.brave.Browser DefaultBrowserSettingEnabled -bool true
+defaults write com.brave.Browser DefaultGeolocationSetting -integer 2
+defaults write com.brave.Browser DefaultNotificationsSetting -integer 2
+defaults write com.brave.Browser DefaultSensorsSetting -integer 2
+defaults write com.brave.Browser HttpsUpgradesEnabled -bool true
+defaults write com.brave.Browser ClearBrowsingDataOnExitList -array "cookies_and_other_site_data" "cached_images_and_files" "password_signin" "autofill"
+
+echo "Brave Browser configuration completed."
+
+###################################################
+#                                                 #
 #               System Cleanup                    #
 #                                                 #
 ###################################################
