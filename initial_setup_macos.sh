@@ -1,6 +1,7 @@
 #!/bin/bash
 
-
+# Prevent Mac from turning on when opening its lid or connecting to a power source
+sudo nvram BootPreference=%00
 
 # Set the timezone; see `sudo systemsetup -listtimezones` for other values
 sudo systemsetup -settimezone "Europe/Zurich" > /dev/null
