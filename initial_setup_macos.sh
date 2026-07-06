@@ -41,6 +41,9 @@ defaults write com.apple.Dock tilesize -int 62
 # Fix Missions control to NEVER rearrange spaces
 defaults write com.apple.dock mru-spaces -bool false
 
+# Enable "Group windows by application" in Mission Control
+defaults write com.apple.dock expose-group-apps -bool true
+
 ###################################################
 #                                                 #
 #          Enable-Disable features                #
@@ -429,6 +432,30 @@ if [ $? -eq 0 ]; then
     fi
 else
     echo "Failed to download Bitwarden."
+fi
+
+# Download and install OpenCode
+echo "Downloading OpenCode..."
+curl -L -o "$TEMP_DIR/OpenCode.dmg" "https://github.com/anomalyco/opencode/releases/latest/download/opencode-desktop-mac-arm64.dmg"
+
+if [ $? -eq 0 ]; then
+    echo "Installing OpenCode..."
+    hdiutil attach "$TEMP_DIR/OpenCode.dmg" -quiet
+
+    # Find the actual volume name and app name
+    OPENCODE_VOLUME=$(ls /Volumes/ | grep -i opencode | head -1)
+    OPENCODE_APP=$(ls "/Volumes/$OPENCODE_VOLUME/" | grep -E "\.app$" | head -1)
+
+    if [ -n "$OPENCODE_VOLUME" ] && [ -n "$OPENCODE_APP" ]; then
+        cp -R "/Volumes/$OPENCODE_VOLUME/$OPENCODE_APP" "/Applications/"
+        hdiutil detach "/Volumes/$OPENCODE_VOLUME" -quiet
+        echo "OpenCode installed successfully."
+    else
+        echo "Failed to locate OpenCode app in mounted volume."
+        hdiutil detach "/Volumes/$OPENCODE_VOLUME" -quiet 2>/dev/null || true
+    fi
+else
+    echo "Failed to download OpenCode."
 fi
 
 # Clean up temporary directory
