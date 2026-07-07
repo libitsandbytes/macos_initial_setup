@@ -458,11 +458,57 @@ else
     echo "Failed to download OpenCode."
 fi
 
-# Clean up temporary directory
-echo "Cleaning up temporary files..."
-rm -rf "$TEMP_DIR"
+# Get latest VSCodium version and download URL
+echo "Checking latest VSCodium version..."
+VSCODIUM_LATEST=$(curl -s "https://api.github.com/repos/VSCodium/vscodium/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+VSCODIUM_URL="https://github.com/VSCodium/vscodium/releases/download/$VSCODIUM_LATEST/VSCodium.arm64.$VSCODIUM_LATEST.dmg"
 
-echo "Application installation completed."
+echo "Downloading VSCodium..."
+curl -L -o "$TEMP_DIR/VSCodium.dmg" "$VSCODIUM_URL"
+
+if [ $? -eq 0 ]; then
+    echo "Installing VSCodium..."
+    hdiutil attach "$TEMP_DIR/VSCodium.dmg" -quiet
+
+    # Find the actual volume name and app name
+    VSCODIUM_VOLUME=$(ls /Volumes/ | grep -i vscodium | head -1)
+    VSCODIUM_APP=$(ls "/Volumes/$VSCODIUM_VOLUME/" | grep -E "\.app$" | head -1)
+
+    if [ -n "$VSCODIUM_VOLUME" ] && [ -n "$VSCODIUM_APP" ]; then
+        cp -R "/Volumes/$VSCODIUM_VOLUME/$VSCODIUM_APP" "/Applications/"
+        hdiutil detach "/Volumes/$VSCODIUM_VOLUME" -quiet
+        echo "VSCodium installed successfully."
+    else
+        echo "Failed to locate VSCodium app in mounted volume."
+        hdiutil detach "/Volumes/$VSCODIUM_VOLUME" -quiet 2>/dev/null || true
+    fi
+else
+    echo "Failed to download VSCodium."
+fi
+
+# Download and install ONLYOFFICE
+echo "Downloading ONLYOFFICE..."
+curl -L -o "$TEMP_DIR/ONLYOFFICE.dmg" "https://github.com/ONLYOFFICE/DesktopEditors/releases/latest/download/ONLYOFFICE-arm.dmg"
+
+if [ $? -eq 0 ]; then
+    echo "Installing ONLYOFFICE..."
+    hdiutil attach "$TEMP_DIR/ONLYOFFICE.dmg" -quiet
+
+    # Find the actual volume name and app name
+    ONLYOFFICE_VOLUME=$(ls /Volumes/ | grep -i onlyoffice | head -1)
+    ONLYOFFICE_APP=$(ls "/Volumes/$ONLYOFFICE_VOLUME/" | grep -E "\.app$" | head -1)
+
+    if [ -n "$ONLYOFFICE_VOLUME" ] && [ -n "$ONLYOFFICE_APP" ]; then
+        cp -R "/Volumes/$ONLYOFFICE_VOLUME/$ONLYOFFICE_APP" "/Applications/"
+        hdiutil detach "/Volumes/$ONLYOFFICE_VOLUME" -quiet
+        echo "ONLYOFFICE installed successfully."
+    else
+        echo "Failed to locate ONLYOFFICE app in mounted volume."
+        hdiutil detach "/Volumes/$ONLYOFFICE_VOLUME" -quiet 2>/dev/null || true
+    fi
+else
+    echo "Failed to download ONLYOFFICE."
+fi
 
 # Download and install Brave
 echo "Downloading Brave..."
@@ -535,6 +581,30 @@ defaults write com.brave.Browser HttpsUpgradesEnabled -bool true
 defaults write com.brave.Browser ClearBrowsingDataOnExitList -array "cookies_and_other_site_data" "cached_images_and_files" "password_signin" "autofill"
 
 echo "Brave Browser configuration completed."
+
+###################################################
+#                                                 #
+#              Homebrew & Packages                #
+#                                                 #
+###################################################
+
+echo "Installing Homebrew..."
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Add Homebrew to PATH for this session (Apple Silicon default location)
+if [ -f "/opt/homebrew/bin/brew" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+echo "Installing Homebrew packages..."
+brew install yt-dlp
+brew install ghostscript
+brew install ffmpeg
+brew install deno
+brew install --cask mactex-no-gui
+brew install sherlock
+
+echo "Homebrew package installation completed."
 
 ###################################################
 #                                                 #
