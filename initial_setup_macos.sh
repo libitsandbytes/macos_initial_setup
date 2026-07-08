@@ -601,8 +601,16 @@ brew install yt-dlp
 brew install ghostscript
 brew install ffmpeg
 brew install deno
-brew install --cask mactex-no-gui
 brew install sherlock
+brew install exiftool
+brew install pandoc
+brew install --cask mactex-no-gui
+brew install --cask pearcleaner
+brew install --cask rustdesk
+brew install --cask inkscape
+brew install --cask upscayl
+brew install --cask transmission
+brew install --cask gimp
 
 echo "Homebrew package installation completed."
 
