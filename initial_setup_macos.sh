@@ -616,6 +616,35 @@ echo "Homebrew package installation completed."
 
 ###################################################
 #                                                 #
+#                   Cron Jobs                     #
+#                                                 #
+###################################################
+
+echo "Configuring cron jobs..."
+
+# Add a cron entry only if it isn't already present (idempotent — safe to re-run)
+add_cron() {
+    local entry="$1"
+    if ! crontab -l 2>/dev/null | grep -Fq -- "$entry"; then
+        (crontab -l 2>/dev/null; echo "$entry") | crontab -
+        echo "  + $entry"
+    else
+        echo "  = (already present) $entry"
+    fi
+}
+
+# Weekly Homebrew update/cleanup — Sunday 23:00
+add_cron '0 23 * * 0 /opt/homebrew/bin/brew update && /opt/homebrew/bin/brew upgrade && /opt/homebrew/bin/brew cleanup'
+
+# Remove .DS_Store files every 5 min — $HOME resolves to whoever runs the script
+for dir in kDrive Downloads Documents Movies Public Desktop Pictures Music; do
+    add_cron "*/5 * * * * find $HOME/$dir -name '.DS_Store' -type f -delete >/dev/null 2>&1"
+done
+
+echo "Cron jobs configured."
+
+###################################################
+#                                                 #
 #               System Cleanup                    #
 #                                                 #
 ###################################################
