@@ -316,6 +316,22 @@ defaults write com.apple.commerce AutoUpdateRestartRequired -bool true
 
 ###################################################
 #                                                 #
+#           Other MacOS default apps              #
+#                                                 #
+###################################################
+
+# Set nano as editor in the terminal
+echo 'export EDITOR=nano' >> ~/.zshrc
+echo 'export VISUAL="$EDITOR"' >> ~/.zshrc
+
+# Disable smart quotes in TextEdit
+defaults write com.apple.TextEdit "SmartQuotes" -bool "false"
+
+# Disable default rich text in TextEdit
+defaults write com.apple.TextEdit "RichText" -bool "true"
+
+###################################################
+#                                                 #
 #           Application Installation              #
 #                                                 #
 ###################################################
