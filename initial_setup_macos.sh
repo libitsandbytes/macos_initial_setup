@@ -366,36 +366,6 @@ else
     echo "Failed to download ProtonMail."
 fi
 
-# Get latest Rectangle version and download URL
-echo "Checking latest Rectangle version..."
-RECTANGLE_LATEST=$(curl -s "https://api.github.com/repos/rxhanson/Rectangle/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-RECTANGLE_VERSION=$(echo $RECTANGLE_LATEST | sed 's/^v//')
-RECTANGLE_URL="https://github.com/rxhanson/Rectangle/releases/download/$RECTANGLE_LATEST/Rectangle$RECTANGLE_VERSION.dmg"
-
-echo "Downloading Rectangle..."
-
-curl -L -o "$TEMP_DIR/Rectangle.dmg" "$RECTANGLE_URL"
-
-if [ $? -eq 0 ]; then
-    echo "Installing Rectangle..."
-    hdiutil attach "$TEMP_DIR/Rectangle.dmg" -quiet
-    
-    # Find the actual volume name and app name
-    RECTANGLE_VOLUME=$(ls /Volumes/ | grep -i rectangle | head -1)
-    RECTANGLE_APP=$(ls "/Volumes/$RECTANGLE_VOLUME/" | grep -E "\.app$" | head -1)
-    
-    if [ -n "$RECTANGLE_VOLUME" ] && [ -n "$RECTANGLE_APP" ]; then
-        cp -R "/Volumes/$RECTANGLE_VOLUME/$RECTANGLE_APP" "/Applications/"
-        hdiutil detach "/Volumes/$RECTANGLE_VOLUME" -quiet
-        echo "Rectangle installed successfully."
-    else
-        echo "Failed to locate Rectangle app in mounted volume."
-        hdiutil detach "/Volumes/$RECTANGLE_VOLUME" -quiet 2>/dev/null || true
-    fi
-else
-    echo "Failed to download Rectangle."
-fi
-
 # Get latest Signal Messenger version and download URL
 echo "Checking latest Signal Messenger version..."
 SIGNAL_LATEST=$(curl -s "https://api.github.com/repos/signalapp/Signal-Desktop/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -472,34 +442,6 @@ if [ $? -eq 0 ]; then
     fi
 else
     echo "Failed to download OpenCode."
-fi
-
-# Get latest VSCodium version and download URL
-echo "Checking latest VSCodium version..."
-VSCODIUM_LATEST=$(curl -s "https://api.github.com/repos/VSCodium/vscodium/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-VSCODIUM_URL="https://github.com/VSCodium/vscodium/releases/download/$VSCODIUM_LATEST/VSCodium.arm64.$VSCODIUM_LATEST.dmg"
-
-echo "Downloading VSCodium..."
-curl -L -o "$TEMP_DIR/VSCodium.dmg" "$VSCODIUM_URL"
-
-if [ $? -eq 0 ]; then
-    echo "Installing VSCodium..."
-    hdiutil attach "$TEMP_DIR/VSCodium.dmg" -quiet
-
-    # Find the actual volume name and app name
-    VSCODIUM_VOLUME=$(ls /Volumes/ | grep -i vscodium | head -1)
-    VSCODIUM_APP=$(ls "/Volumes/$VSCODIUM_VOLUME/" | grep -E "\.app$" | head -1)
-
-    if [ -n "$VSCODIUM_VOLUME" ] && [ -n "$VSCODIUM_APP" ]; then
-        cp -R "/Volumes/$VSCODIUM_VOLUME/$VSCODIUM_APP" "/Applications/"
-        hdiutil detach "/Volumes/$VSCODIUM_VOLUME" -quiet
-        echo "VSCodium installed successfully."
-    else
-        echo "Failed to locate VSCodium app in mounted volume."
-        hdiutil detach "/Volumes/$VSCODIUM_VOLUME" -quiet 2>/dev/null || true
-    fi
-else
-    echo "Failed to download VSCodium."
 fi
 
 # Download and install ONLYOFFICE
@@ -620,6 +562,7 @@ brew install deno
 brew install sherlock
 brew install exiftool
 brew install pandoc
+brew install --cask rectangle
 brew install --cask mactex-no-gui
 brew install --cask pearcleaner
 brew install --cask rustdesk
@@ -627,6 +570,11 @@ brew install --cask inkscape
 brew install --cask upscayl
 brew install --cask transmission
 brew install --cask gimp
+brew install --cask deepl
+brew install --cask spotify
+brew install --cask excalidrawz
+brew install --cask vscodium
+
 
 echo "Homebrew package installation completed."
 
