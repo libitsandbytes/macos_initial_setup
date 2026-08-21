@@ -19,7 +19,7 @@ gimp_install=true                       # GIMP is an image editor, alternative t
 ghostscript_install=true                # Ghostscript is an interpreter for PostScript and PDF files
 inkscape_install=true                   # Inkscape is a vector graphics editor, alternative to Adobe Illustrator
 kdrive_install=true                     # kDrive is a cloud storage platform, alternative to Google Drive, Microsoft OneDrive, Dropbox
-mactex-no-gui_install=true              # MacTeX (no GUI) is a TeX/LaTeX distribution for macOS without GUI applications
+mactexnogui_install=true                # MacTeX (no GUI) is a TeX/LaTeX distribution for macOS without GUI applications
 onlyoffice_install=true                 # OnlyOffice is an office suite that provides editors for documents, spreadsheets, presentations, and PDFs, alternative to Microsoft Office
 opencode_install=true                   # OpenCode is a free and open-source artificial intelligence coding agent, alternative to Claude Code and Codex
 pandoc_install=true                     # Pandoc is a document converter for converting between markup formats
@@ -33,7 +33,7 @@ spotify_install=true                    # Spotify is a music streaming service
 transmission_install=true               # Transmission is a BitTorrent client
 upscayl_install=true                    # Upscayl is an AI image upscaler
 vscodium_install=true                   # VSCodium is a VS Code distribution without Microsoft telemetry
-yt-dlp_install=true                     # yt-dlp is a free and open-source tool for downloading video and audio from YouTube and over 1,000 other video hosting websites
+ytdlp_install=true                      # yt-dlp is a free and open-source tool for downloading video and audio from YouTube and over 1,000 other video hosting websites
 
 
 ###################################################
@@ -121,10 +121,13 @@ defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 defaults write com.apple.CloudSubscriptionFeatures.optIn "545129924" -bool "false"
 
 # Set default screenshot location to Downloads.
-defaults write com.apple.screencapture "location" -string "~/Downloads" && killall SystemUIServer
+defaults write com.apple.screencapture "location" -string "~/Downloads"
 
-#Set screenshots image format to jpg
+# Set screenshots image format to jpg
 defaults write com.apple.screencapture "type" -string "jpg"
+
+# Restart SystemUIServer to load changes
+killall SystemUIServer
 
 ###################################################
 #                                                 #
@@ -204,16 +207,16 @@ defaults write com.apple.finder SidebarPlacesSectionDisclosedState -bool true
 defaults write com.apple.finder SidebarShowingiCloudDesktop -bool false
 
 # Hide internal hard drives on desktop
-$ defaults write com.apple.Finder ShowHardDrivesOnDesktop -bool false
+defaults write com.apple.Finder ShowHardDrivesOnDesktop -bool false
 
 # Hide external hard drives on desktop
-$ defaults write com.apple.Finder ShowExternalHardDrivesOnDesktop -bool false
+defaults write com.apple.Finder ShowExternalHardDrivesOnDesktop -bool false
 
 # Hide removable media on desktop
-$ defaults write com.apple.Finder ShowRemovableMediaOnDesktop -bool false
+defaults write com.apple.Finder ShowRemovableMediaOnDesktop -bool false
 
 # Hide mounted servers on desktop
-$ defaults write com.apple.Finder ShowMountedServersOnDesktop -bool false
+defaults write com.apple.Finder ShowMountedServersOnDesktop -bool false
 
 # Restart Finder to apply changes
 echo "Restarting Finder to apply changes..."
@@ -262,7 +265,7 @@ echo "Speeding up Launchpad animations..."
 defaults write com.apple.dock springboard-show-duration -float 0.1
 defaults write com.apple.dock springboard-hide-duration -float 0.1
 
- # Disable dock hiding animation
+# Disable dock hiding animation
 echo "Disabling dock hiding animations..."
 defaults write com.apple.dock autohide-time-modifier -float 0
 defaults write com.apple.dock autohide-delay -float 0
@@ -363,14 +366,14 @@ defaults write com.apple.commerce AutoUpdateRestartRequired -bool true
 ###################################################
 
 # Set nano as editor in the terminal
-echo 'export EDITOR=nano' >> ~/.zshrc
-echo 'export VISUAL="$EDITOR"' >> ~/.zshrc
+grep -q 'export EDITOR=nano' ~/.zshrc 2>/dev/null || echo 'export EDITOR=nano' >> ~/.zshrc
+grep -q 'export VISUAL="$EDITOR"' ~/.zshrc 2>/dev/null || echo 'export VISUAL="$EDITOR"' >> ~/.zshrc
 
 # Disable smart quotes in TextEdit
 defaults write com.apple.TextEdit "SmartQuotes" -bool "false"
 
 # Disable default rich text in TextEdit
-defaults write com.apple.TextEdit "RichText" -bool "true"
+defaults write com.apple.TextEdit "RichText" -bool "false"
 
 ###################################################
 #                                                 #
@@ -385,202 +388,265 @@ TEMP_DIR=$(mktemp -d)
 echo "Using temporary directory: $TEMP_DIR"
 
 # Download and install ProtonMail
-echo "Downloading ProtonMail..."
-curl -L -o "$TEMP_DIR/ProtonMail-desktop.dmg" "https://proton.me/download/mail/macos/ProtonMail-desktop.dmg"
+if [ "$protonmail_install" = true ]; then
+    echo "Downloading ProtonMail..."
+    curl -fL -o "$TEMP_DIR/ProtonMail-desktop.dmg" "https://proton.me/download/mail/macos/ProtonMail-desktop.dmg"
 
-if [ $? -eq 0 ]; then
-    echo "Installing ProtonMail..."
-    hdiutil attach "$TEMP_DIR/ProtonMail-desktop.dmg" -quiet
-    
-    # Find the actual volume name and app name
-    PROTON_VOLUME=$(ls /Volumes/ | grep -i proton | head -1)
-    PROTON_APP=$(ls "/Volumes/$PROTON_VOLUME/" | grep -E "\.app$" | head -1)
-    
-    if [ -n "$PROTON_VOLUME" ] && [ -n "$PROTON_APP" ]; then
-        cp -R "/Volumes/$PROTON_VOLUME/$PROTON_APP" "/Applications/"
-        hdiutil detach "/Volumes/$PROTON_VOLUME" -quiet
-        echo "ProtonMail installed successfully."
+    if [ $? -eq 0 ]; then
+        echo "Installing ProtonMail..."
+        hdiutil attach "$TEMP_DIR/ProtonMail-desktop.dmg" -quiet
+        
+        # Find the actual volume name and app name
+        PROTON_VOLUME=$(ls /Volumes/ | grep -i proton | head -1)
+        PROTON_APP=$(ls "/Volumes/$PROTON_VOLUME/" | grep -E "\.app$" | head -1)
+        
+        if [ -n "$PROTON_VOLUME" ] && [ -n "$PROTON_APP" ]; then
+            cp -R "/Volumes/$PROTON_VOLUME/$PROTON_APP" "/Applications/"
+            hdiutil detach "/Volumes/$PROTON_VOLUME" -quiet
+            echo "ProtonMail installed successfully."
+        else
+            echo "Failed to locate ProtonMail app in mounted volume."
+            hdiutil detach "/Volumes/$PROTON_VOLUME" -quiet 2>/dev/null || true
+        fi
     else
-        echo "Failed to locate ProtonMail app in mounted volume."
-        hdiutil detach "/Volumes/$PROTON_VOLUME" -quiet 2>/dev/null || true
+        echo "Failed to download ProtonMail."
     fi
 else
-    echo "Failed to download ProtonMail."
+    echo "Skipping Proton Mail installation (protonmail_install=false)."
 fi
+
 
 # Get latest Signal Messenger version and download URL
-echo "Checking latest Signal Messenger version..."
-SIGNAL_LATEST=$(curl -s "https://api.github.com/repos/signalapp/Signal-Desktop/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-SIGNAL_VERSION=$(echo $SIGNAL_LATEST | sed 's/^v//')
-SIGNAL_URL="https://updates.signal.org/desktop/signal-desktop-mac-universal-$SIGNAL_VERSION.dmg"
+if [ "$signal_install" = true ]; then
+    echo "Checking latest Signal Messenger version..."
+    SIGNAL_LATEST=$(curl -fs "https://api.github.com/repos/signalapp/Signal-Desktop/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    SIGNAL_VERSION=$(echo $SIGNAL_LATEST | sed 's/^v//')
+    SIGNAL_URL="https://updates.signal.org/desktop/signal-desktop-mac-universal-$SIGNAL_VERSION.dmg"
 
-echo "Downloading Signal Messenger..."
+    echo "Downloading Signal Messenger..."
 
-curl -L -o "$TEMP_DIR/Signal.dmg" "$SIGNAL_URL"
+    curl -fL -o "$TEMP_DIR/Signal.dmg" "$SIGNAL_URL"
 
-if [ $? -eq 0 ]; then
-    echo "Installing Signal Messenger..."
-    hdiutil attach "$TEMP_DIR/Signal.dmg" -quiet
-    
-    # Find the actual volume name and app name
-    SIGNAL_VOLUME=$(ls /Volumes/ | grep -i signal | head -1)
-    SIGNAL_APP=$(ls "/Volumes/$SIGNAL_VOLUME/" | grep -E "\.app$" | head -1)
-    
-    if [ -n "$SIGNAL_VOLUME" ] && [ -n "$SIGNAL_APP" ]; then
-        cp -R "/Volumes/$SIGNAL_VOLUME/$SIGNAL_APP" "/Applications/"
-        hdiutil detach "/Volumes/$SIGNAL_VOLUME" -quiet
-        echo "Signal Messenger installed successfully."
+    if [ $? -eq 0 ]; then
+        echo "Installing Signal Messenger..."
+        hdiutil attach "$TEMP_DIR/Signal.dmg" -quiet
+        
+        # Find the actual volume name and app name
+        SIGNAL_VOLUME=$(ls /Volumes/ | grep -i signal | head -1)
+        SIGNAL_APP=$(ls "/Volumes/$SIGNAL_VOLUME/" | grep -E "\.app$" | head -1)
+        
+        if [ -n "$SIGNAL_VOLUME" ] && [ -n "$SIGNAL_APP" ]; then
+            cp -R "/Volumes/$SIGNAL_VOLUME/$SIGNAL_APP" "/Applications/"
+            hdiutil detach "/Volumes/$SIGNAL_VOLUME" -quiet
+            echo "Signal Messenger installed successfully."
+        else
+            echo "Failed to locate Signal Messenger app in mounted volume."
+            hdiutil detach "/Volumes/$SIGNAL_VOLUME" -quiet 2>/dev/null || true
+        fi
     else
-        echo "Failed to locate Signal Messenger app in mounted volume."
-        hdiutil detach "/Volumes/$SIGNAL_VOLUME" -quiet 2>/dev/null || true
+        echo "Failed to download Signal Messenger."
     fi
 else
-    echo "Failed to download Signal Messenger."
+    echo "Skipping Signal Messenger installation (signal_install=false)."
 fi
+
 
 # Download and install Bitwarden
-echo "Downloading Bitwarden..."
-curl -L -o "$TEMP_DIR/Bitwarden.dmg" "https://bitwarden.com/download/?app=desktop&platform=macos&variant=dmg"
+if [ "$bitwarden_install" = true ]; then
+    echo "Downloading Bitwarden..."
+    curl -fL -o "$TEMP_DIR/Bitwarden.dmg" "https://bitwarden.com/download/?app=desktop&platform=macos&variant=dmg"
 
-if [ $? -eq 0 ]; then
-    echo "Installing Bitwarden..."
-    hdiutil attach "$TEMP_DIR/Bitwarden.dmg" -quiet
-    
-    # Find the actual volume name and app name
-    BITWARDEN_VOLUME=$(ls /Volumes/ | grep -i bitwarden | head -1)
-    BITWARDEN_APP=$(ls "/Volumes/$BITWARDEN_VOLUME/" | grep -E "\.app$" | head -1)
-    
-    if [ -n "$BITWARDEN_VOLUME" ] && [ -n "$BITWARDEN_APP" ]; then
-        cp -R "/Volumes/$BITWARDEN_VOLUME/$BITWARDEN_APP" "/Applications/"
-        hdiutil detach "/Volumes/$BITWARDEN_VOLUME" -quiet
-        echo "Bitwarden installed successfully."
+    if [ $? -eq 0 ]; then
+        echo "Installing Bitwarden..."
+        hdiutil attach "$TEMP_DIR/Bitwarden.dmg" -quiet
+        
+        # Find the actual volume name and app name
+        BITWARDEN_VOLUME=$(ls /Volumes/ | grep -i bitwarden | head -1)
+        BITWARDEN_APP=$(ls "/Volumes/$BITWARDEN_VOLUME/" | grep -E "\.app$" | head -1)
+        
+        if [ -n "$BITWARDEN_VOLUME" ] && [ -n "$BITWARDEN_APP" ]; then
+            cp -R "/Volumes/$BITWARDEN_VOLUME/$BITWARDEN_APP" "/Applications/"
+            hdiutil detach "/Volumes/$BITWARDEN_VOLUME" -quiet
+            echo "Bitwarden installed successfully."
+        else
+            echo "Failed to locate Bitwarden app in mounted volume."
+            hdiutil detach "/Volumes/$BITWARDEN_VOLUME" -quiet 2>/dev/null || true
+        fi
     else
-        echo "Failed to locate Bitwarden app in mounted volume."
-        hdiutil detach "/Volumes/$BITWARDEN_VOLUME" -quiet 2>/dev/null || true
+        echo "Failed to download Bitwarden."
     fi
 else
-    echo "Failed to download Bitwarden."
+    echo "Skipping Bitwarden installation (bitwarden_install=false)."
 fi
+
 
 # Download and install OpenCode
-echo "Downloading OpenCode..."
-curl -L -o "$TEMP_DIR/OpenCode.dmg" "https://github.com/anomalyco/opencode/releases/latest/download/opencode-desktop-mac-arm64.dmg"
+if [ "$opencode_install" = true ]; then
+    echo "Downloading OpenCode..."
+    curl -fL -o "$TEMP_DIR/OpenCode.dmg" "https://github.com/anomalyco/opencode/releases/latest/download/opencode-desktop-mac-arm64.dmg"
 
-if [ $? -eq 0 ]; then
-    echo "Installing OpenCode..."
-    hdiutil attach "$TEMP_DIR/OpenCode.dmg" -quiet
+    if [ $? -eq 0 ]; then
+        echo "Installing OpenCode..."
+        hdiutil attach "$TEMP_DIR/OpenCode.dmg" -quiet
 
-    # Find the actual volume name and app name
-    OPENCODE_VOLUME=$(ls /Volumes/ | grep -i opencode | head -1)
-    OPENCODE_APP=$(ls "/Volumes/$OPENCODE_VOLUME/" | grep -E "\.app$" | head -1)
+        # Find the actual volume name and app name
+        OPENCODE_VOLUME=$(ls /Volumes/ | grep -i opencode | head -1)
+        OPENCODE_APP=$(ls "/Volumes/$OPENCODE_VOLUME/" | grep -E "\.app$" | head -1)
 
-    if [ -n "$OPENCODE_VOLUME" ] && [ -n "$OPENCODE_APP" ]; then
-        cp -R "/Volumes/$OPENCODE_VOLUME/$OPENCODE_APP" "/Applications/"
-        hdiutil detach "/Volumes/$OPENCODE_VOLUME" -quiet
-        echo "OpenCode installed successfully."
+        if [ -n "$OPENCODE_VOLUME" ] && [ -n "$OPENCODE_APP" ]; then
+            cp -R "/Volumes/$OPENCODE_VOLUME/$OPENCODE_APP" "/Applications/"
+            hdiutil detach "/Volumes/$OPENCODE_VOLUME" -quiet
+            echo "OpenCode installed successfully."
+        else
+            echo "Failed to locate OpenCode app in mounted volume."
+            hdiutil detach "/Volumes/$OPENCODE_VOLUME" -quiet 2>/dev/null || true
+        fi
     else
-        echo "Failed to locate OpenCode app in mounted volume."
-        hdiutil detach "/Volumes/$OPENCODE_VOLUME" -quiet 2>/dev/null || true
+        echo "Failed to download OpenCode."
     fi
 else
-    echo "Failed to download OpenCode."
+    echo "Skipping OpenCode installation (opencode_install=false)."
 fi
+
 
 # Download and install ONLYOFFICE
-echo "Downloading ONLYOFFICE..."
-curl -L -o "$TEMP_DIR/ONLYOFFICE.dmg" "https://github.com/ONLYOFFICE/DesktopEditors/releases/latest/download/ONLYOFFICE-arm.dmg"
+if [ "$onlyoffice_install" = true ]; then
+    echo "Downloading ONLYOFFICE..."
+    curl -fL -o "$TEMP_DIR/ONLYOFFICE.dmg" "https://github.com/ONLYOFFICE/DesktopEditors/releases/latest/download/ONLYOFFICE-arm.dmg"
 
-if [ $? -eq 0 ]; then
-    echo "Installing ONLYOFFICE..."
-    hdiutil attach "$TEMP_DIR/ONLYOFFICE.dmg" -quiet
+    if [ $? -eq 0 ]; then
+        echo "Installing ONLYOFFICE..."
+        hdiutil attach "$TEMP_DIR/ONLYOFFICE.dmg" -quiet
 
-    # Find the actual volume name and app name
-    ONLYOFFICE_VOLUME=$(ls /Volumes/ | grep -i onlyoffice | head -1)
-    ONLYOFFICE_APP=$(ls "/Volumes/$ONLYOFFICE_VOLUME/" | grep -E "\.app$" | head -1)
+        # Find the actual volume name and app name
+        ONLYOFFICE_VOLUME=$(ls /Volumes/ | grep -i onlyoffice | head -1)
+        ONLYOFFICE_APP=$(ls "/Volumes/$ONLYOFFICE_VOLUME/" | grep -E "\.app$" | head -1)
 
-    if [ -n "$ONLYOFFICE_VOLUME" ] && [ -n "$ONLYOFFICE_APP" ]; then
-        cp -R "/Volumes/$ONLYOFFICE_VOLUME/$ONLYOFFICE_APP" "/Applications/"
-        hdiutil detach "/Volumes/$ONLYOFFICE_VOLUME" -quiet
-        echo "ONLYOFFICE installed successfully."
+        if [ -n "$ONLYOFFICE_VOLUME" ] && [ -n "$ONLYOFFICE_APP" ]; then
+            cp -R "/Volumes/$ONLYOFFICE_VOLUME/$ONLYOFFICE_APP" "/Applications/"
+            hdiutil detach "/Volumes/$ONLYOFFICE_VOLUME" -quiet
+            echo "ONLYOFFICE installed successfully."
+        else
+            echo "Failed to locate ONLYOFFICE app in mounted volume."
+            hdiutil detach "/Volumes/$ONLYOFFICE_VOLUME" -quiet 2>/dev/null || true
+        fi
     else
-        echo "Failed to locate ONLYOFFICE app in mounted volume."
-        hdiutil detach "/Volumes/$ONLYOFFICE_VOLUME" -quiet 2>/dev/null || true
+        echo "Failed to download ONLYOFFICE."
     fi
 else
-    echo "Failed to download ONLYOFFICE."
+    echo "Skipping OnlyOffice installation (onlyoffice_install=false)."
 fi
+
+# Download and install kDrive
+if [ "$kdrive_install" = true ]; then
+    echo "Installing kDrive..."
+
+    echo "Fetching latest kDrive download URL..."
+    KDRIVE_URL=$(curl -fsSL "https://www.infomaniak.com/drive/latest" \
+        | grep -o '"macos":[^}]*' \
+        | grep -o '"downloadurl": *"[^"]*"' \
+        | sed 's/.*"downloadurl": *"//; s/"$//; s|\\/|/|g')
+
+    if [ -n "$KDRIVE_URL" ]; then
+        echo "Downloading kDrive from: $KDRIVE_URL"
+        if curl -fL -o "$TEMP_DIR/kDrive.pkg" "$KDRIVE_URL"; then
+            echo "Installing kDrive package..."
+            if sudo installer -pkg "$TEMP_DIR/kDrive.pkg" -target /; then
+                echo "kDrive installed successfully."
+            else
+                echo "Failed to install kDrive package."
+            fi
+        else
+            echo "Failed to download kDrive."
+        fi
+    else
+        echo "Failed to fetch kDrive download URL."
+    fi
+else
+    echo "Skipping kDrive installation (kdrive_install=false)."
+fi
+
 
 # Download and install Brave
-echo "Downloading Brave..."
-curl -L -o "$TEMP_DIR/Brave.dmg" "https://laptop-updates.brave.com/latest/osx"
+if [ "$brave_install" = true ]; then
+    echo "Downloading Brave..."
+    curl -fL -o "$TEMP_DIR/Brave.dmg" "https://laptop-updates.brave.com/latest/osx"
 
-if [ $? -eq 0 ]; then
-    echo "Installing Brave..."
-    hdiutil attach "$TEMP_DIR/Brave.dmg" -quiet
-    
-    # Find the actual volume name and app name
-    BRAVE_VOLUME=$(ls /Volumes/ | grep -i brave | head -1)
-    BRAVE_APP=$(ls "/Volumes/$BRAVE_VOLUME/" | grep -E "\.app$" | head -1)
-    
-    if [ -n "$BRAVE_VOLUME" ] && [ -n "$BRAVE_APP" ]; then
-        cp -R "/Volumes/$BRAVE_VOLUME/$BRAVE_APP" "/Applications/"
-        hdiutil detach "/Volumes/$BRAVE_VOLUME" -quiet
-        echo "Brave installed successfully."
+    if [ $? -eq 0 ]; then
+        echo "Installing Brave..."
+        hdiutil attach "$TEMP_DIR/Brave.dmg" -quiet
+        
+        # Find the actual volume name and app name
+        BRAVE_VOLUME=$(ls /Volumes/ | grep -i brave | head -1)
+        BRAVE_APP=$(ls "/Volumes/$BRAVE_VOLUME/" | grep -E "\.app$" | head -1)
+        
+        if [ -n "$BRAVE_VOLUME" ] && [ -n "$BRAVE_APP" ]; then
+            cp -R "/Volumes/$BRAVE_VOLUME/$BRAVE_APP" "/Applications/"
+            hdiutil detach "/Volumes/$BRAVE_VOLUME" -quiet
+            echo "Brave installed successfully."
+        else
+            echo "Failed to locate Brave app in mounted volume."
+            hdiutil detach "/Volumes/$BRAVE_VOLUME" -quiet 2>/dev/null || true
+        fi
     else
-        echo "Failed to locate Brave app in mounted volume."
-        hdiutil detach "/Volumes/$BRAVE_VOLUME" -quiet 2>/dev/null || true
+        echo "Failed to download Brave."
     fi
+
+    ###################################################
+    #                                                 #
+    #                  Brave config                   #
+    #                                                 #
+    ###################################################
+
+    # Configure Brave Browser
+    echo "Configuring Brave Browser..."
+
+    # Managed Settings - Security and Privacy Focused
+    echo "Applying managed Brave settings..."
+    defaults write com.brave.Browser TorDisabled -bool true
+    defaults write com.brave.Browser BraveRewardsDisabled -bool true
+    defaults write com.brave.Browser BraveWalletDisabled -bool true
+    defaults write com.brave.Browser BraveVPNDisabled -bool true
+    defaults write com.brave.Browser BraveAIChatEnabled -bool false
+    defaults write com.brave.Browser ExtensionInstallForcelist -array "nngceckbapebfimnlniiiahkandclblb;https://clients2.google.com/service/update2/crx" "cofdbpoegempjloogbagkncekinflcnj;https://clients2.google.com/service/update2/crx"
+    defaults write com.brave.Browser DefaultSearchProviderEnabled -bool true
+    defaults write com.brave.Browser DefaultSearchProviderName -string "Startpage"
+    defaults write com.brave.Browser DefaultSearchProviderSearchURL -string "https://eu.startpage.com/sp/search?query={searchTerms}&prfe=499dee7473ba6fe94b74ac8b94ee04457fc16b5d14c7e0db606858927c6bc283f953ad551f7beca19e503d14176eaa4d82029c8cace3cda754570c7e28fb666ab150c00038e7bbc587b259f03d61ba0edaae"
+    defaults write com.brave.Browser AutofillAddressEnabled -bool false
+    defaults write com.brave.Browser AutofillCreditCardEnabled -bool false
+    defaults write com.brave.Browser PasswordManagerEnabled -bool false
+    defaults write com.brave.Browser TranslateEnabled -bool false
+    defaults write com.brave.Browser ImportAutofillFormData -bool false
+    defaults write com.brave.Browser ImportSavedPasswords -bool false
+    defaults write com.brave.Browser EnableMediaRouter -bool false
+
+    # Recommended Settings - Enhanced Security and Usability
+    echo "Applying recommended Brave settings..."
+    defaults write com.brave.Browser AlwaysOpenPdfExternally -bool true
+    defaults write com.brave.Browser BlockThirdPartyCookies -bool true
+    defaults write com.brave.Browser BookmarkBarEnabled -bool true
+    defaults write com.brave.Browser DefaultBrowserSettingEnabled -bool true
+    defaults write com.brave.Browser DefaultGeolocationSetting -integer 2
+    defaults write com.brave.Browser DefaultNotificationsSetting -integer 2
+    defaults write com.brave.Browser DefaultSensorsSetting -integer 2
+    defaults write com.brave.Browser HttpsUpgradesEnabled -bool true
+    defaults write com.brave.Browser ClearBrowsingDataOnExitList -array "cookies_and_other_site_data" "cached_images_and_files" "password_signin" "autofill"
+
+    echo "Brave Browser configuration completed."
 else
-    echo "Failed to download Brave."
+    echo "Skipping Brave installation (brave_install=false)."
 fi
 
-# Clean up temporary directory
+###################################################
+#                                                 #
+#             Clean up install files              #
+#                                                 #
+###################################################
+
 echo "Cleaning up temporary files..."
 rm -rf "$TEMP_DIR"
 
 echo "Application installation completed."
-
-###################################################
-#                                                 #
-#                  Brave config                   #
-#                                                 #
-###################################################
-
-# Configure Brave Browser
-echo "Configuring Brave Browser..."
-
-# Managed Settings - Security and Privacy Focused
-echo "Applying managed Brave settings..."
-defaults write com.brave.Browser TorDisabled -bool true
-defaults write com.brave.Browser BraveRewardsDisabled -bool true
-defaults write com.brave.Browser BraveWalletDisabled -bool true
-defaults write com.brave.Browser BraveVPNDisabled -bool true
-defaults write com.brave.Browser BraveAIChatEnabled -bool false
-defaults write com.brave.Browser ExtensionInstallForcelist -array "nngceckbapebfimnlniiiahkandclblb;https://clients2.google.com/service/update2/crx" "cofdbpoegempjloogbagkncekinflcnj;https://clients2.google.com/service/update2/crx"
-defaults write com.brave.Browser DefaultSearchProviderEnabled -bool true
-defaults write com.brave.Browser DefaultSearchProviderName -string "Startpage"
-defaults write com.brave.Browser DefaultSearchProviderSearchURL -string "https://eu.startpage.com/sp/search?query={searchTerms}&prfe=499dee7473ba6fe94b74ac8b94ee04457fc16b5d14c7e0db606858927c6bc283f953ad551f7beca19e503d14176eaa4d82029c8cace3cda754570c7e28fb666ab150c00038e7bbc587b259f03d61ba0edaae"
-defaults write com.brave.Browser AutofillAddressEnabled -bool false
-defaults write com.brave.Browser AutofillCreditCardEnabled -bool false
-defaults write com.brave.Browser PasswordManagerEnabled -bool false
-defaults write com.brave.Browser TranslateEnabled -bool false
-defaults write com.brave.Browser ImportAutofillFormData -bool false
-defaults write com.brave.Browser ImportSavedPasswords -bool false
-defaults write com.brave.Browser EnableMediaRouter -bool false
-
-# Recommended Settings - Enhanced Security and Usability
-echo "Applying recommended Brave settings..."
-defaults write com.brave.Browser AlwaysOpenPdfExternally -bool true
-defaults write com.brave.Browser BlockThirdPartyCookies -bool true
-defaults write com.brave.Browser BookmarkBarEnabled -bool true
-defaults write com.brave.Browser DefaultBrowserSettingEnabled -bool true
-defaults write com.brave.Browser DefaultGeolocationSetting -integer 2
-defaults write com.brave.Browser DefaultNotificationsSetting -integer 2
-defaults write com.brave.Browser DefaultSensorsSetting -integer 2
-defaults write com.brave.Browser HttpsUpgradesEnabled -bool true
-defaults write com.brave.Browser ClearBrowsingDataOnExitList -array "cookies_and_other_site_data" "cached_images_and_files" "password_signin" "autofill"
-
-echo "Brave Browser configuration completed."
 
 ###################################################
 #                                                 #
@@ -596,27 +662,42 @@ if [ -f "/opt/homebrew/bin/brew" ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-echo "Installing Homebrew packages..."
-brew install yt-dlp
-brew install ghostscript
-brew install ffmpeg
-brew install deno
-brew install sherlock
-brew install exiftool
-brew install pandoc
-brew install --cask rectangle
-brew install --cask mactex-no-gui
-brew install --cask pearcleaner
-brew install --cask rustdesk
-brew install --cask inkscape
-brew install --cask upscayl
-brew install --cask transmission
-brew install --cask gimp
-brew install --cask deepl
-brew install --cask spotify
-brew install --cask excalidrawz
-brew install --cask vscodium
+# Helper: install a brew formula/cask only if its toggle is true
+brew_install() {
+    local enabled="$1"
+    shift
+    if [ "$enabled" = true ]; then
+        echo "Installing: brew install $*"
+        brew install "$@"
+    else
+        echo "Skipping: brew install $* (toggle off)"
+    fi
+}
 
+echo "Installing Homebrew packages..."
+
+# Formulae
+brew_install "$deno_install"           deno
+brew_install "$exiftool_install"       exiftool
+brew_install "$ffmpeg_install"         ffmpeg
+brew_install "$ghostscript_install"    ghostscript
+brew_install "$pandoc_install"         pandoc
+brew_install "$sherlock_install"       sherlock
+brew_install "$ytdlp_install"          yt-dlp
+
+# Casks
+brew_install "$deepl_install"         --cask deepl
+brew_install "$excalidrawz_install"    --cask excalidrawz
+brew_install "$gimp_install"           --cask gimp
+brew_install "$inkscape_install"       --cask inkscape
+brew_install "$mactexnogui_install"   --cask mactex-no-gui
+brew_install "$pearcleaner_install"    --cask pearcleaner
+brew_install "$rectangle_install"      --cask rectangle
+brew_install "$rustdesk_install"       --cask rustdesk
+brew_install "$spotify_install"        --cask spotify
+brew_install "$transmission_install"   --cask transmission
+brew_install "$upscayl_install"        --cask upscayl
+brew_install "$vscodium_install"       --cask vscodium
 
 echo "Homebrew package installation completed."
 
