@@ -1,5 +1,47 @@
 #!/bin/bash
 
+###################################################
+#                                                 #
+#             Config the script                   #
+#             (not active yet)                    #
+#                                                 #
+###################################################
+
+# Set to true to install the app, false to skip
+bitwarden_install=true                  # Bitwarden is an open source, externally audited password manager
+brave_install=true                      # Brave is a privacy friendly browser based on Chromium (compatible with Chrome extensions)
+deepl_install=true                      # DeepL is a machine translation service
+deno_install=true                       # Deno is a secure runtime for JavaScript and TypeScript
+excalidrawz_install=true                # ExcalidrawZ is a native macOS client for Excalidraw, a virtual whiteboard
+exiftool_install=true                   # ExifTool is a CLI tool for reading and writing metadata in media files
+ffmpeg_install=true                     # FFmpeg is a multimedia framework for encoding, decoding, and converting audio/video
+gimp_install=true                       # GIMP is an image editor, alternative to Adobe Photoshop
+ghostscript_install=true                # Ghostscript is an interpreter for PostScript and PDF files
+inkscape_install=true                   # Inkscape is a vector graphics editor, alternative to Adobe Illustrator
+kdrive_install=true                     # kDrive is a cloud storage platform, alternative to Google Drive, Microsoft OneDrive, Dropbox
+mactex-no-gui_install=true              # MacTeX (no GUI) is a TeX/LaTeX distribution for macOS without GUI applications
+onlyoffice_install=true                 # OnlyOffice is an office suite that provides editors for documents, spreadsheets, presentations, and PDFs, alternative to Microsoft Office
+opencode_install=true                   # OpenCode is a free and open-source artificial intelligence coding agent, alternative to Claude Code and Codex
+pandoc_install=true                     # Pandoc is a document converter for converting between markup formats
+pearcleaner_install=true                # PearCleaner is an app uninstaller for macOS
+protonmail_install=true                 # Proton Mail is the desktop mail and calendar client for Proton services
+rectangle_install=true                  # Rectangle is a window manager for moving and resizing windows with keyboard shortcuts
+rustdesk_install=true                   # RustDesk is an open-source remote desktop client, alternative to TeamViewer
+sherlock_install=true                   # Sherlock is a CLI tool for finding usernames across social media
+signal_install=true                     # Signal Messenger is a privacy friendly alternative to messaging apps like WhatsApp
+spotify_install=true                    # Spotify is a music streaming service
+transmission_install=true               # Transmission is a BitTorrent client
+upscayl_install=true                    # Upscayl is an AI image upscaler
+vscodium_install=true                   # VSCodium is a VS Code distribution without Microsoft telemetry
+yt-dlp_install=true                     # yt-dlp is a free and open-source tool for downloading video and audio from YouTube and over 1,000 other video hosting websites
+
+
+###################################################
+#                                                 #
+#               Global MacOS                      #
+#                                                 #
+###################################################
+
 # Prevent Mac from turning on when opening its lid or connecting to a power source
 sudo nvram BootPreference=%00
 
