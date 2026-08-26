@@ -34,6 +34,18 @@ upscayl_install=true                    # Upscayl is an AI image upscaler
 vscodium_install=true                   # VSCodium is a VS Code distribution without Microsoft telemetry
 ytdlp_install=true                      # yt-dlp is a free and open-source tool for downloading video and audio from YouTube and over 1,000 other video hosting websites
 
+nextdns_profile_id="xxxxxx"             # NextDNS profile ID from your NextDNS dashboard (if nothing or xxxxxx then no nextdns config at all)
+device_name=""                          # Custom device name (leave empty to generate a random one)
+
+###################################################
+#                                                 #
+#               Prerequisites                     #
+#                                                 #
+###################################################
+
+# Create temporary directory for downloads
+TEMP_DIR=$(mktemp -d)
+echo "Using temporary directory: $TEMP_DIR"
 
 ###################################################
 #                                                 #
@@ -44,8 +56,14 @@ ytdlp_install=true                      # yt-dlp is a free and open-source tool 
 # Prevent Mac from turning on when opening its lid or connecting to a power source
 sudo nvram BootPreference=%00
 
+# Disable chime sound on boot of MacOS
+sudo nvram StartupMute=%01
+
 # Set the timezone; see `sudo systemsetup -listtimezones` for other values
 sudo systemsetup -settimezone "Europe/Zurich" > /dev/null
+
+# Disable chime sound when you connect a charger
+sudo defaults write com.apple.PowerChime ChimeOnNoHardware -bool true && killall PowerChime
 
 ###################################################
 #                                                 #
@@ -278,58 +296,228 @@ echo "Restarting Dock to apply changes..."
 killall Dock
 
 ###############################################################################
-# Safari & WebKit                                                             #
+#                                                                             #
+#                         Safari & WebKit                                     #
+#                                                                             #
 ###############################################################################
 
-# Privacy: don’t send search queries to Apple
-defaults write com.apple.Safari UniversalSearchEnabled -bool false
-defaults write com.apple.Safari SuppressSearchSuggestions -bool true
+echo "Configuring Safari settings..."
 
-# Show the full URL in the address bar (note: this still hides the scheme)
-defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
+# On macOS Sequoia+, Safari's preferences are SIP-protected and cannot be
+# written via `defaults write`. A configuration profile bypasses SIP using
+# Apple's profile-managed preferences mechanism.
+SAFARI_PROFILE="$TEMP_DIR/Safari-Setup.mobileconfig"
 
-# Set Safari’s home page to `about:blank` for faster loading
-defaults write com.apple.Safari HomePage -string "about:blank"
+cat > "$SAFARI_PROFILE" << 'PROFILE_EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.Safari</string>
+            <key>PayloadIdentifier</key>
+            <string>com.setup.safari</string>
+            <key>PayloadUUID</key>
+            <string>A1B2C3D4-E5F6-4A5B-9C8D-7E8F9A0B1C2D</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>UniversalSearchEnabled</key>
+            <false/>
+            <key>SuppressSearchSuggestions</key>
+            <true/>
+            <key>ShowFullURLInSmartSearchField</key>
+            <true/>
+            <key>HomePage</key>
+            <string>about:blank</string>
+            <key>ShowFavoritesBar</key>
+            <true/>
+            <key>WebContinuousSpellCheckingEnabled</key>
+            <true/>
+            <key>WebAutomaticSpellingCorrectionEnabled</key>
+            <false/>
+            <key>AutoFillFromAddressBook</key>
+            <false/>
+            <key>AutoFillPasswords</key>
+            <false/>
+            <key>AutoFillCreditCardData</key>
+            <false/>
+            <key>AutoFillMiscellaneousForms</key>
+            <false/>
+            <key>WebKitPluginsEnabled</key>
+            <false/>
+            <key>WebKitJavaEnabled</key>
+            <false/>
+            <key>WebKitJavaScriptCanOpenWindowsAutomatically</key>
+            <false/>
+            <key>WebKitMediaPlaybackAllowsInline</key>
+            <false/>
+            <key>SendDoNotTrackHTTPHeader</key>
+            <true/>
+            <key>InstallExtensionUpdatesAutomatically</key>
+            <true/>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>Safari Privacy Settings</string>
+    <key>PayloadDescription</key>
+    <string>Configures Safari privacy and security preferences.</string>
+    <key>PayloadIdentifier</key>
+    <string>com.setup.safarisettings</string>
+    <key>PayloadUUID</key>
+    <string>B2C3D4E5-F6A7-4B8C-9D0E-1F2A3B4C5D6E</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+</dict>
+</plist>
+PROFILE_EOF
 
-# Show Safari’s bookmarks bar by default
-defaults write com.apple.Safari ShowFavoritesBar -bool true
+# Trigger the profile download notification
+open "$SAFARI_PROFILE"
+sleep 2
 
-# Enable continuous spellchecking
-defaults write com.apple.Safari WebContinuousSpellCheckingEnabled -bool true
+# Open System Settings directly to the Profiles / Device Management section
+open "x-apple.systempreferences:com.apple.preferences.configurationprofiles"
 
-# Disable auto-correct
-defaults write com.apple.Safari WebAutomaticSpellingCorrectionEnabled -bool false
+echo ""
+echo "=== Safari Configuration Profile ==="
+echo "A Safari configuration profile has been downloaded."
+echo "System Settings is now open at the Profiles / Device Management section."
+echo ""
+echo "Steps to install:"
+echo "  1. Double-click the 'Safari Privacy Settings' profile in the list"
+echo "  2. Click 'Install' (you may need to enter your password)"
+echo "  3. Click 'Install' again to confirm"
+echo ""
+read -p "Press Enter when the profile has been installed..."
+echo "=== Safari configuration complete ==="
+echo ""
 
-# Disable AutoFill
-defaults write com.apple.Safari AutoFillFromAddressBook -bool false
-defaults write com.apple.Safari AutoFillPasswords -bool false
-defaults write com.apple.Safari AutoFillCreditCardData -bool false
-defaults write com.apple.Safari AutoFillMiscellaneousForms -bool false
+###################################################
+#                                                 #
+#                    NextDNS                      #
+#                                                 #
+###################################################
 
-# Disable plug-ins
-defaults write com.apple.Safari WebKitPluginsEnabled -bool false
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2PluginsEnabled -bool false
+if [ -n "$nextdns_profile_id" ] && [ "$nextdns_profile_id" != "xxxxxx" ]; then
+    echo "Configuring NextDNS..."
 
-# Disable Java
-defaults write com.apple.Safari WebKitJavaEnabled -bool false
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled -bool false
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
+    # Auto-detect device name and URL-encode it for the DoH path
+    NEXTDNS_DEVICE_NAME=$(scutil --get ComputerName 2>/dev/null || echo "Mac")
+    NEXTDNS_DEVICE_NAME_ENC=$(echo "$NEXTDNS_DEVICE_NAME" | tr -c 'a-zA-Z0-9-' '-')
+    NEXTDNS_URL="https://dns.nextdns.io/${nextdns_profile_id}/${NEXTDNS_DEVICE_NAME_ENC}"
 
-# Block pop-up windows
-defaults write com.apple.Safari WebKitJavaScriptCanOpenWindowsAutomatically -bool false
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaScriptCanOpenWindowsAutomatically -bool false
+    NEXTDNS_PROFILE="$TEMP_DIR/NextDNS-Setup.mobileconfig"
 
-# Disable auto-playing video
-defaults write com.apple.Safari WebKitMediaPlaybackAllowsInline -bool false
-defaults write com.apple.SafariTechnologyPreview WebKitMediaPlaybackAllowsInline -bool false
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2AllowsInlineMediaPlayback -bool false
-defaults write com.apple.SafariTechnologyPreview com.apple.Safari.ContentPageGroupIdentifier.WebKit2AllowsInlineMediaPlayback -bool false
+    cat > "$NEXTDNS_PROFILE" << NEXTDNS_EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>NextDNS (${nextdns_profile_id})</string>
+    <key>PayloadDescription</key>
+    <string>This profile enables NextDNS on all networks using the native Encrypted DNS feature.</string>
+    <key>PayloadIdentifier</key>
+    <string>io.nextdns.${nextdns_profile_id}.profile</string>
+    <key>PayloadScope</key>
+    <string>System</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>C3D4E5F6-A7B8-4C9D-0E1F-2A3B4C5D6E7F</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>DNSSettings</key>
+            <dict>
+                <key>DNSProtocol</key>
+                <string>HTTPS</string>
+                <key>ServerURL</key>
+                <string>${NEXTDNS_URL}</string>
+                <key>ServerAddresses</key>
+                <array>
+                    <string>45.90.28.0</string>
+                    <string>45.90.30.0</string>
+                    <string>2a07:a8c0::</string>
+                    <string>2a07:a8c1::</string>
+                </array>
+            </dict>
+            <key>OnDemandRules</key>
+            <array>
+                <dict>
+                    <key>Action</key>
+                    <string>EvaluateConnection</string>
+                    <key>ActionParameters</key>
+                    <array>
+                        <dict>
+                            <key>DomainAction</key>
+                            <string>NeverConnect</string>
+                            <key>Domains</key>
+                            <array>
+                                <string>captive.apple.com</string>
+                                <string>3gppnetwork.org</string>
+                                <string>dav.orange.fr</string>
+                                <string>vvm.mobistar.be</string>
+                                <string>vvm.mstore.msg.t-mobile.com</string>
+                                <string>tma.vvm.mone.pan-net.eu</string>
+                                <string>vvm.ee.co.uk</string>
+                            </array>
+                        </dict>
+                    </array>
+                </dict>
+                <dict>
+                    <key>Action</key>
+                    <string>Connect</string>
+                </dict>
+            </array>
+            <key>PayloadType</key>
+            <string>com.apple.dnsSettings.managed</string>
+            <key>PayloadIdentifier</key>
+            <string>io.nextdns.${nextdns_profile_id}.profile.dnsSettings.managed</string>
+            <key>PayloadUUID</key>
+            <string>C3D4E5F6-A7B8-4C9D-0E1F-2A3B4C5D6E7F.dnsSettings.managed</string>
+            <key>PayloadDisplayName</key>
+            <string>NextDNS (${nextdns_profile_id})</string>
+            <key>PayloadOrganization</key>
+            <string>NextDNS</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+        </dict>
+    </array>
+</dict>
+</plist>
+NEXTDNS_EOF
 
-# Enable “Do Not Track”
-defaults write com.apple.Safari SendDoNotTrackHTTPHeader -bool true
+    # Trigger the profile download notification
+    open "$NEXTDNS_PROFILE"
+    sleep 2
 
-# Update extensions automatically
-defaults write com.apple.Safari InstallExtensionUpdatesAutomatically -bool true
+    # Open System Settings directly to the Profiles / Device Management section
+    open "x-apple.systempreferences:com.apple.preferences.configurationprofiles"
+
+    echo ""
+    echo "=== NextDNS Configuration Profile ==="
+    echo "A NextDNS configuration profile has been downloaded."
+    echo "System Settings is now open at the Profiles / Device Management section."
+    echo ""
+    echo "Steps to install:"
+    echo "  1. Double-click the 'NextDNS' profile in the list"
+    echo "  2. Click 'Install' (you may need to enter your password)"
+    echo "  3. Click 'Install' again to confirm"
+    echo ""
+    read -p "Press Enter when the profile has been installed..."
+    echo "=== NextDNS configuration complete ==="
+    echo ""
+else
+    echo "Skipping NextDNS configuration (nextdns_profile_id not set)."
+fi
 
 ###################################################
 #                                                 #
@@ -381,10 +569,6 @@ defaults write com.apple.TextEdit "RichText" -bool "false"
 ###################################################
 
 echo "Starting application downloads and installations..."
-
-# Create temporary directory for downloads
-TEMP_DIR=$(mktemp -d)
-echo "Using temporary directory: $TEMP_DIR"
 
 # Download and install ProtonMail
 if [ "$protonmail_install" = true ]; then
@@ -655,11 +839,16 @@ echo "Application installation completed."
 
 echo "Installing Homebrew..."
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+sleep 5
 
 # Add Homebrew to PATH for this session (Apple Silicon default location)
 if [ -f "/opt/homebrew/bin/brew" ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
+sleep 5
+
+export HOMEBREW_NO_ASK=1                            # skip "ask mode" install confirmation prompt
+export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1     # skip "upgrade dependents?" prompt (post-install)
 
 # Helper: install a brew formula/cask only if its toggle is true
 brew_install() {
@@ -667,7 +856,7 @@ brew_install() {
     shift
     if [ "$enabled" = true ]; then
         echo "Installing: brew install $*"
-        brew install "$@"
+        sudo brew install "$@"
     else
         echo "Skipping: brew install $* (toggle off)"
     fi
@@ -720,7 +909,7 @@ add_cron() {
 }
 
 # Weekly Homebrew update/cleanup — Sunday 23:00
-add_cron '0 23 * * 0 /opt/homebrew/bin/brew update && /opt/homebrew/bin/brew upgrade && /opt/homebrew/bin/brew cleanup'
+add_cron '0 23 * * 0 /opt/homebrew/bin/brew update && /opt/homebrew/bin/brew upgrade -y && /opt/homebrew/bin/brew cleanup'
 
 # Remove .DS_Store files every 5 min — $HOME resolves to whoever runs the script
 for dir in kDrive Downloads Documents Movies Public Desktop Pictures Music; do
@@ -737,3 +926,5 @@ echo "Cron jobs configured."
 
 # Empty Trash
 rm -rf ~/.Trash/*
+
+echo "Script finished."
