@@ -53,6 +53,24 @@ echo "Using temporary directory: $TEMP_DIR"
 #                                                 #
 ###################################################
 
+# Set device name (custom or random) — applied to all three macOS name settings
+if [ -z "$device_name" ]; then
+    # Generate a random name: Mac-XXXXXX (6 random alphanumeric chars)
+    RANDOM_SUFFIX=$(cat /dev/urandom | LC_ALL=C tr -dc 'A-Z0-9' | head -c 6)
+    device_name="Mac-$RANDOM_SUFFIX"
+fi
+
+# Sanitize: replace anything that's not a-z, A-Z, 0-9, or - with a dash, collapse consecutive dashes
+device_name_sanitized=$(echo "$device_name" | tr -c 'a-zA-Z0-9-' '-' | tr -s '-')
+
+# Apply to all three macOS name settings
+sudo scutil --set ComputerName "$device_name_sanitized"
+sudo scutil --set LocalHostName "$device_name_sanitized"
+sudo scutil --set HostName "$device_name_sanitized"
+
+echo "Device name set to: $device_name_sanitized"
+sleep 5
+
 # Prevent Mac from turning on when opening its lid or connecting to a power source
 sudo nvram BootPreference=%00
 
