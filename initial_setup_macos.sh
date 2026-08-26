@@ -83,6 +83,17 @@ sudo systemsetup -settimezone "Europe/Zurich" > /dev/null
 # Disable chime sound when you connect a charger
 sudo defaults write com.apple.PowerChime ChimeOnNoHardware -bool true && killall PowerChime
 
+# Hide username and photo on the lock screen
+sudo defaults write /Library/Preferences/com.apple.loginwindow HideUserAvatarAndName -bool true
+
+# Keep sudo credentials alive for the entire script duration
+sudo -v
+while true; do
+    sudo -n true
+    sleep 15
+    kill -0 "$$" 2>/dev/null || exit
+done 2>/dev/null &
+
 ###################################################
 #                                                 #
 #               Dock Settings                     #
