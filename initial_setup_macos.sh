@@ -868,13 +868,16 @@ echo "Application installation completed."
 
 echo "Installing Homebrew..."
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-sleep 5
+sleep 2
 
 # Add Homebrew to PATH for this session (Apple Silicon default location)
 if [ -f "/opt/homebrew/bin/brew" ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
-sleep 5
+
+# Force a full update of formulae/casks before installing anything
+brew update
+sleep 2
 
 export HOMEBREW_NO_ASK=1                            # skip "ask mode" install confirmation prompt
 export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1     # skip "upgrade dependents?" prompt (post-install)
