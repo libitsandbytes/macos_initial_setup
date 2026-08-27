@@ -90,7 +90,7 @@ sudo defaults write /Library/Preferences/com.apple.loginwindow HideUserAvatarAnd
 sudo -v
 while true; do
     sudo -n true
-    sleep 15
+    sleep 30
     kill -0 "$$" 2>/dev/null || exit
 done 2>/dev/null &
 
@@ -885,7 +885,7 @@ brew_install() {
     shift
     if [ "$enabled" = true ]; then
         echo "Installing: brew install $*"
-        sudo brew install "$@"
+        brew install "$@"
     else
         echo "Skipping: brew install $* (toggle off)"
     fi
