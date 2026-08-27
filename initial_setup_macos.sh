@@ -55,13 +55,13 @@ echo "Using temporary directory: $TEMP_DIR"
 
 # Set device name (custom or random) — applied to all three macOS name settings
 if [ -z "$device_name" ]; then
-    # Generate a random name: Mac-XXXXXX (6 random alphanumeric chars)
+    # Generate a random name: XXXXXX (6 random alphanumeric chars)
     RANDOM_SUFFIX=$(cat /dev/urandom | LC_ALL=C tr -dc 'A-Z0-9' | head -c 6)
-    device_name="Mac-$RANDOM_SUFFIX"
+    device_name="$RANDOM_SUFFIX"
 fi
 
 # Sanitize: replace anything that's not a-z, A-Z, 0-9, or - with a dash, collapse consecutive dashes
-device_name_sanitized=$(echo "$device_name" | tr -c 'a-zA-Z0-9-' '-' | tr -s '-')
+device_name_sanitized=$(printf '%s' "$device_name" | tr -c 'a-zA-Z0-9-' '-' | tr -s '-' | sed 's/-*$//')
 
 # Apply to all three macOS name settings
 sudo scutil --set ComputerName "$device_name_sanitized"
