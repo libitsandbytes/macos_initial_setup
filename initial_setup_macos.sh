@@ -920,6 +920,54 @@ echo "Homebrew package installation completed."
 
 ###################################################
 #                                                 #
+#               Dock Customization                #
+#                                                 #
+###################################################
+
+echo "Customizing Dock apps..."
+
+# Install dockutil temporarily
+brew install dockutil
+
+# Remove all default Dock items (Finder re-added below)
+dockutil --remove all --no-restart
+
+# Always add system apps
+dockutil --add "/System/Library/CoreServices/Finder.app" --no-restart
+
+# Add installed apps in the desired order (only if their toggle was true)
+if [ "$protonmail_install" = true ]; then
+    dockutil --add "/Applications/Proton Mail.app" --no-restart
+fi
+if [ "$bitwarden_install" = true ]; then
+    dockutil --add "/Applications/Bitwarden.app" --no-restart
+fi
+if [ "$signal_install" = true ]; then
+    dockutil --add "/Applications/Signal.app" --no-restart
+fi
+if [ "$brave_install" = true ]; then
+    dockutil --add "/Applications/Brave.app" --no-restart
+fi
+if [ "$vscodium_install" = true ]; then
+    dockutil --add "/Applications/VSCodium.app" --no-restart
+fi
+# Terminal is always added (system app)
+dockutil --add "/System/Applications/Utilities/Terminal.app" --no-restart
+if [ "$opencode_install" = true ]; then
+    dockutil --add "/Applications/OpenCode.app" --no-restart
+fi
+
+# Restart Dock to apply all changes
+killall Dock
+
+# Completely uninstall dockutil and clean up cache
+brew uninstall dockutil
+rm -rf "$(brew --cache dockutil)" 2>/dev/null
+
+echo "Dock customization complete."
+
+###################################################
+#                                                 #
 #                   Cron Jobs                     #
 #                                                 #
 ###################################################
